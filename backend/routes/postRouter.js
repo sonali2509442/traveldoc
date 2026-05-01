@@ -13,19 +13,11 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + "-" + file.originalname),
 });
 
-// THEN MULTER ✅
 const upload = multer({ storage });
-
-// const upload = multer({ storage }).any();
-
-
-// =====================================
-// ✅ CREATE POST
-// =====================================
 postRouter.post(
   "/",
   authUser,
-upload.any(),
+  upload.any(),
   async (req, res) => {
     try {
       const {
@@ -34,9 +26,9 @@ upload.any(),
         budget,
         story,
         foodExpense,
-  travelExpense,
-  stayExpense,
-        
+        travelExpense,
+        stayExpense,
+
         location,
         rating,
       } = req.body;
@@ -44,79 +36,77 @@ upload.any(),
       const user = await User.findById(req.userId);
 
       if (!user) {
-  return res.status(401).json({
-    success: false,
-    message: "User not found / Not logged in",
-  });
-}
+        return res.status(401).json({
+          success: false,
+          message: "User not found / Not logged in",
+        });
+      }
 
-     const galleryImages = req.files
-  .filter(file => file.fieldname === "galleryImages")
-  .map(file => file.path);
+      const galleryImages = req.files
+        .filter(file => file.fieldname === "galleryImages")
+        .map(file => file.path);
 
-const shortVideos = req.files
-  .filter(file => file.fieldname === "shortVideos")
-  .map(file => file.path);
+      const shortVideos = req.files
+        .filter(file => file.fieldname === "shortVideos")
+        .map(file => file.path);
 
-const memoryImage = req.files
-  .filter(file => file.fieldname === "memoryImage")
-  .map(file => file.path);
+      const memoryImage = req.files
+        .filter(file => file.fieldname === "memoryImage")
+        .map(file => file.path);
 
-// const foodImage =
-//   req.files?.foodImage?.map(f => f.path) || []
-// ;
-let foodItems = [];
+  
+      let foodItems = [];
 
-try {
-  foodItems = req.body.foodItems
-    ? JSON.parse(req.body.foodItems)
-    : [];
-} catch (err) {
-  foodItems = [];
-}
+      try {
+        foodItems = req.body.foodItems
+          ? JSON.parse(req.body.foodItems)
+          : [];
+      } catch (err) {
+        foodItems = [];
+      }
 
-// ✅ SIMPLE FIX: take all food images together
-const foodImages = req.files.filter(
-  (file) => file.fieldname === "foodImages"
-);
+      // ✅ SIMPLE FIX: take all food images together
+      const foodImages = req.files.filter(
+        (file) => file.fieldname === "foodImages"
+      );
 
-let imgIndex = 0;
+      let imgIndex = 0;
 
-foodItems = foodItems.map((item) => {
-  const images = [];
+      foodItems = foodItems.map((item) => {
+        const images = [];
 
-  // assign 1 image per item (simple logic)
-  if (foodImages[imgIndex]) {
-    images.push(foodImages[imgIndex].path);
-    imgIndex++;
-  }
+        // assign 1 image per item (simple logic)
+        if (foodImages[imgIndex]) {
+          images.push(foodImages[imgIndex].path);
+          imgIndex++;
+        }
 
-  return {
-    ...item,
-    images,
-  };
-});
+        return {
+          ...item,
+          images,
+        };
+      });
 
       const newPost = new Post({
         title,
         userName: user.name,
         userId: req.userId,
         youtubeLink: youtubeLink
-  ? JSON.parse(youtubeLink)
-  : [],
+          ? JSON.parse(youtubeLink)
+          : [],
         budget,
         story,
-        
+
         location,
         galleryImages,
         memoryImage,
         foodExpense,
-travelExpense,
-stayExpense,
-        
+        travelExpense,
+        stayExpense,
+
         shortVideos,
         foodItems,
-        
+
 
 
       });
@@ -125,13 +115,13 @@ stayExpense,
 
       res.json({ success: true, data: newPost });
     } catch (err) {
-  console.log("CREATE POST ERROR:", err.message); // ⭐ add this
+      console.log("CREATE POST ERROR:", err.message); // ⭐ add this
 
-  res.status(500).json({
-    success: false,
-    message: err.message, // ⭐ show real error
-  });
-}
+      res.status(500).json({
+        success: false,
+        message: err.message, // ⭐ show real error
+      });
+    }
   }
 );
 
@@ -390,7 +380,7 @@ postRouter.delete("/:id", authUser, async (req, res) => {
     });
   }
 
- 
+
 });
 postRouter.post("/:id/rate", authUser, async (req, res) => {
   try {
@@ -489,6 +479,19 @@ postRouter.get("/saved/my", authUser, async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({ success: false });
+  }
+});
+
+// =====================================
+// ✅ GET LOGGED-IN USER'S OWN POSTS (for dashboard)
+// =====================================
+postRouter.get("/mine/all", authUser, async (req, res) => {
+  try {
+    const posts = await Post.find({ userId: req.userId }).sort({ createdAt: -1 });
+    res.json({ success: true, data: posts });
+  } catch (err) {
+    console.log("GET MY POSTS ERROR:", err);
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 

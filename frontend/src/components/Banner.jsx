@@ -22,7 +22,7 @@ const Banner = () => {
         {/* IMAGE */}
         <div className="w-full md:w-1/2">
           <img 
-            src="/searchplace.png" 
+            src="\search.png" 
             alt="search place"
             className="w-full h-[250px] md:h-[400px] object-cover rounded-2xl shadow-md"
           />

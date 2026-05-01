@@ -6,7 +6,7 @@ const connectDB = async ()=>{
             console.log("Connected to MongoDB")
      );
        await mongoose.connect(process.env.MONGODB_URI, {
-      family: 4, // ⭐ FORCE IPv4 (fixes SRV issnues)
+      family: 4,
     });
 
 

@@ -6,7 +6,6 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-
     userName: String,
 
     userId: {
@@ -16,25 +15,25 @@ const postSchema = new mongoose.Schema(
     },
 
     youtubeLink: {
-  type: [String],
-  default: [],
-},
+      type: [String],
+      default: [],
+    },
 
     budget: Number,
     foodExpense: String,
-travelExpense: String,
-stayExpense: String,
+    travelExpense: String,
+    stayExpense: String,
     story: String,
 
     foodItems: [
-  {
-    name: String,
-    location: String,
-    price: String,
-    rating: Number,
-    images: [String],
-  },
-],
+      {
+        name: String,
+        location: String,
+        price: String,
+        rating: Number,
+        images: [String],
+      },
+    ],
 
     galleryImages: {
       type: [String],
@@ -46,7 +45,7 @@ stayExpense: String,
       default: [],
     },
 
-    
+
 
     memoryImage: {
       type: [String],
@@ -56,20 +55,20 @@ stayExpense: String,
     location: String,
 
     // ⭐ advanced rating system
-  ratings: [
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-    value: Number,
-  },
-],
+    ratings: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        value: Number,
+      },
+    ],
 
-averageRating: {
-  type: Number,
-  default: 0,
-},
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

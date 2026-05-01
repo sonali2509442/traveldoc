@@ -1,49 +1,10 @@
 
-//Register user : /api/user/register
-
 import User from "../models/User.js";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import otpGenerator from "otp-generator";
 import OTP from "../models/otpModels.js";
 import transporter from "../utils/sendEmail.js";
-
-// export const register = async (req, res) => {
-//     try {
-//        const {name, email, password} = req.body;
-//        if(!name || !email || !password){
-//            return res.json({success:false, message:"Please fill all the fields"});
-//        }
-
-//        const existingUser = await User.findOne({email})
-//        if(existingUser){
-//            return res.json({success:false, message:"User already exists"});
-//        }
-
-
-//        const hashedPassword = await bcrypt.hash(password, 10)
-
-//        const user = await User.create({name, email, password: hashedPassword})
-
-//        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET,
-//         {expiresIn: "7d"});
-
-//        res.cookie('token', token, {
-//         httpOnly: true,
-//         secure: false, //use secure cookies in production
-//         sameSite: "lax",
-//         maxAge: 7 * 24 * 60 * 60 * 1000
-//        }) 
-
-//        return res.json({success:true, user:{email:user.email, name:user.name}});
-//     } catch (error) {
-//         console.log(error.message);
-//         res.json({success:false, message:error.message });
-//     }
-// }
-
-
-
 
 export const register = async (req, res) => {
   try {
@@ -74,7 +35,7 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await User.create({
+    const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
@@ -82,7 +43,22 @@ export const register = async (req, res) => {
 
     await OTP.deleteMany({ email });
 
-    res.json({ success: true, message: "Signup successful" });
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.json({
+      success: true,
+      message: "Signup successful",
+      user: { email: newUser.email, name: newUser.name },
+    });
 
   } catch (err) {
     console.log("REGISTER ERROR:", err);
@@ -125,8 +101,6 @@ try {
         res.json({success:false, message:error.message });
 }
 }
-
-
 //check Auth: /api/user/is-auth
 
 export const isAuth = async(req,res)=>{
@@ -141,7 +115,6 @@ try {
         res.json({success:false, message:error.message });
 }
 }
-
 
 //logout user: /api/user/logout
 
@@ -162,19 +135,10 @@ export const logout = async(req,res)=>{
 
 
 
-// export const transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   auth: {
-//     user: "traveldocu0@gmail.com",
-//     pass: "qtkepllszickklwy", // NOT normal password
-//   },
-// });
-
 export const sendOtp = async (req, res) => {
   try {
     const { email } = req.body;
 
-    // ✅ FIX: validation must be here
     if (!email) {
       return res.json({ success: false, message: "Email required" });
     }
@@ -182,7 +146,7 @@ export const sendOtp = async (req, res) => {
     const otp = otpGenerator.generate(6, {
       upperCase: false,
       specialChars: false,
-      alphabets: false,
+      alphabets: true,
     });
 
     await OTP.deleteMany({ email });

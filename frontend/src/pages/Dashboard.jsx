@@ -6,18 +6,13 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchTrips = async () => {
       try {
-        const user = JSON.parse(localStorage.getItem("user"));
-
-        const res = await fetch("http://localhost:2000/api/posts", {
-          headers: {
-            userid: user?._id,
-          },
+        const res = await fetch("http://localhost:2000/api/posts/mine/all", {
+          credentials: "include",
         });
 
         const data = await res.json();
 
-        // 👉 Only user's trips
-const myTrips = data.data || [];
+        const myTrips = data.data || [];
 
         setTrips(myTrips);
       } catch (err) {
@@ -28,10 +23,10 @@ const myTrips = data.data || [];
     fetchTrips();
   }, []);
 
-  // 📊 Trips count
+ 
   const totalTrips = trips.length;
 
-  // 💸 Avg Budget
+  
   const budgets = trips
     .map((t) => parseInt(t.budget))
     .filter((b) => !isNaN(b));
